@@ -77,22 +77,89 @@ class VoteeWordleSolver:
 
 
 
+    # next should be to check if the word is valid
+
+    def is_valid_word(self, word: str, guesses: List[str],feedback: List[str]) -> bool:
+
+        # have to check if wrd matches all the prev feedbacks"
+
+        if word in guesses:
+            return False  # already guessed
+
+        #loop
+        for i in range(len(guesses)):
+            for j in range(len(guesses[i])):
+                if feedback[i][j] == '1' and guesses[i][j] != word[j]:
+                    return False  # green mismatch
+                if feedback[i][j] == '2' and (guesses[i][j] == word[j] or guesses[i][j] not in word):
+                    return False  # yellow mismatch
+                if feedback[i][j] == '3' and guesses[i][j] in word:
+                    return False  # grey mismatch
+        return True
+    
 
         
 
-    # next should be to check if the word is valid
 
-    def is_valid_word(self, word: str) -> bool:
-        pass
+        #pass
 
 
     # then to take the possible words and filter them based on the feedback
-    def get_possible_words(self, guess: str, feedback: List[str]) -> List[str]:
-        pass
+    def get_possible_words(self, guesses: List[str], feedback: List[str]) -> List[str]:
+        return [wo for wo in self.word_list if self.is_valid_word(wo, guesses, feedback)]
+        
 
 
     #then to solve
 
-    def solve(self) -> str:
-        pass
+    def solve(self, mode: str = "daily", size: int = 5, seed: Optional[int] = None
+              ,target_word: Optional[str] = None) -> Optional[str]:
+
+        #here we solve using optimal guesses and feedback
+
+        guesses = []
+        feedback = []
+
+        for attempt in range(6):
+            if attempt == 0:
+                guess = self.optimal_guesses[0]  # first optimal guess
+            elif len(feedback) == 1 and feedback[0] == '33333':
+                guess = self.optimal_guesses[attempt] if attempt < len(self.optimal_guesses) else "crane"
+
+            else:
+                possible = self.get_possible_words(guesses, feedback)
+                if not possible:
+                    possible = [wo for wo in self.word_list if wo not in guesses]  # fallback to any word
+                if possible:
+                    guess = possible[0]  # take the first possible word
+                else:
+                    break  # no possible words left
+
+
+            print(f"Attempt {attempt + 1}: Guessing '{guess}'")
+
+            #then doing the api call
+
+            results = self.make_guess(guess, mode=mode, size=size, seed=seed, target_word=target_word)
+
+            feedback_str = self.feedback_to_string(results, guess)
+
+            guesses.append(guess)
+            feedback.append(feedback_str)
+
+            print(f"Feedback: {feedback_str}")
+
+            if feedback_str == '1' * size:
+                print(f"Solved! The word is '{guess}'")
+                return guess  # solved
+
+
+            possible = self.get_possible_words(guesses, feedback)
+            if len(possible) <= 5:
+                print(f"Possible words left: {possible}")
+
+        print("Failed to solve the Wordle.")
+        return None  # failed to solve
+
+    
 
