@@ -54,6 +54,19 @@ The solver implements:
 - **Simple Scoring**: Letter frequency heuristic isn't as optimal as full entropy calculation
 - **Fixed Attempts**: Limited to 6 attempts like traditional Wordle
 
+
+## Deterministic Behavior
+
+The solver exhibits predictable results for certain modes:
+- **Daily Puzzle**: Same word for all users on a given day (changes at midnight)
+- **Random with Seed**: Same seed produces the same word (reproducible for testing)
+- **Specific Word**: Always returns the specified target word
+
+This deterministic behavior is intentional and useful for:
+- Testing and debugging
+- Reproducing specific scenarios
+- Comparing different strategies
+
 ## Usage
 
 ```bash
